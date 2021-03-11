@@ -1,0 +1,40 @@
+# Package files
+*.jar
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.aar
+*.war
+ 
+# IntelliJ - User specific stuff
+**/.idea/
+*.iml
+*.iws
+*.ipr
+
+# Gradle specific stuff
+**/.gradle/
+**/build/
+
+# IntelliJ
+**/out/
+
+# Java specific stuff
+*.class
+
+# Logfile
+*.log
+
+# Avoid ignoring Gradle wrapper jar file
+!gradle-wrapper.jar
+
+# ---
+
+# Visual Studio
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
