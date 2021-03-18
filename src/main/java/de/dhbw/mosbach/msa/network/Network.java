@@ -2,6 +2,7 @@ package de.dhbw.mosbach.msa.network;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import de.dhbw.mosbach.msa.database.HSQLDB;
 import de.dhbw.mosbach.msa.network.events.ResultEvent;
 
 import java.util.ArrayList;
@@ -26,6 +27,10 @@ public class Network {
 
         eventBus = new EventBus("network");
         eventBus.register(this);
+
+        // Load existing data from database into network.
+        HSQLDB.instance.addParticipantsToNetwork(this);
+        HSQLDB.instance.addChannelsToNetwork(this);
     }
 
     public void addListener(INetworkListener listener) {
@@ -53,6 +58,11 @@ public class Network {
 
     public void addChannel(Channel channel) {
         channels.put(channel.getName(), channel);
+    }
+
+    public void removeChannelByName(String name) {
+        channels.remove(name);
+        HSQLDB.instance.removeChannelFromDatabase(name);
     }
 
     public Participant getParticipant(String name) {

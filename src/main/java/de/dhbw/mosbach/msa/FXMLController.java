@@ -1,5 +1,6 @@
 package de.dhbw.mosbach.msa;
 
+import de.dhbw.mosbach.msa.database.HSQLDB;
 import de.dhbw.mosbach.msa.interpreter.CQLInterpreter;
 import de.dhbw.mosbach.msa.interpreter.CQLResult;
 import de.dhbw.mosbach.msa.interpreter.ICQLInterpreterListener;
@@ -46,7 +47,6 @@ public class FXMLController implements ICQLInterpreterListener, INetworkListener
     public void initialize() {
         Network network = new Network();
         network.addListener(this);
-        // TODO: Load existing data from database into network.
 
         interpreter = new CQLInterpreter(network);
         interpreter.addListener(this);

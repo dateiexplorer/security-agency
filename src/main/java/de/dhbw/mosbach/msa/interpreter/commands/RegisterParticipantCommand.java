@@ -1,5 +1,6 @@
 package de.dhbw.mosbach.msa.interpreter.commands;
 
+import de.dhbw.mosbach.msa.database.HSQLDB;
 import de.dhbw.mosbach.msa.interpreter.CQLInterpreter;
 import de.dhbw.mosbach.msa.interpreter.CQLResult;
 import de.dhbw.mosbach.msa.network.Network;
@@ -47,7 +48,6 @@ public class RegisterParticipantCommand implements ICQLCommand {
         // Create new participant.
         network.addParticipant(new Participant(name, type));
 
-        // TODO: Create table for participant. Maybe directly in the participant class?
         interpreter.result(new CQLResult(CQLResult.Type.OK,
                 String.format("participant %s with type %s registered and postbox_%s created",
                         name, type.name(), name)));

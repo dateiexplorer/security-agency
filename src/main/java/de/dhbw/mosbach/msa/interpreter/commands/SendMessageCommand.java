@@ -45,6 +45,6 @@ public class SendMessageCommand implements ICQLCommand {
                 String.format("send message from %s to %s", participantFrom, participantTo)));
 
         // Do sending message through the channel.
-        from.send(message, algorithm, keyfile, channel);
+        from.send(message, algorithm, keyfile, to, channel);
     }
 }
