@@ -1,2 +1,4 @@
 rootProject.name = 'security-agency'
 include ':components:rsa'
+include ':components:shift'
+include ':components:shift_cracker'

@@ -2,11 +2,16 @@ package de.dhbw.mosbach.msa.network;
 
 import com.google.common.eventbus.Subscribe;
 import de.dhbw.mosbach.msa.database.HSQLDB;
+import de.dhbw.mosbach.msa.factory.Factory;
 import de.dhbw.mosbach.msa.interpreter.CQLResult;
 import de.dhbw.mosbach.msa.network.events.ResultEvent;
 import de.dhbw.mosbach.msa.network.events.SendMessageEvent;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class Participant {
 
@@ -33,39 +38,66 @@ public class Participant {
             switch (type) {
                 case NORMAL -> receive(event.getEncryptedMessage(), event.getAlgorithm(), event.getKeyfile(),
                         event.getFrom(), event.getChannel());
-                case INTRUDER -> intrude(event.getEncryptedMessage(), event.getAlgorithm(), event.getFrom(),
-                        event.getChannel());
+                case INTRUDER -> intrude(event.getEncryptedMessage(), event.getAlgorithm(), event.getKeyfile(),
+                        event.getFrom(), event.getChannel());
             }
         }
     }
 
-    public void send(String message, String algorithm, String keyfile, Participant to, Channel channel) {
-        // TODO: Encrypt
-        HSQLDB.instance.addMessageToDatabase(this, to, message, algorithm, message, keyfile);
-        channel.postOnChannel(new SendMessageEvent(this, to, message, algorithm, keyfile, channel));
+    public void send(String message, String algorithm, File keyfile, Participant to, Channel channel) {
+        Object port = Factory.build(algorithm);
+        try {
+            Method method = port.getClass().getDeclaredMethod("encrypt", String.class, File.class);
+            String encryptedMessage = (String) method.invoke(port, message, keyfile);
+
+            HSQLDB.instance.addMessageToDatabase(this, to, message, algorithm, encryptedMessage,
+                    keyfile.getName());
+
+            channel.postOnChannel(new SendMessageEvent(this, to, encryptedMessage, algorithm, keyfile, channel));
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void receive(String message, String algorithm, String keyfile, Participant from, Channel channel) {
-        // TODO: Decrypt encrypt message
-        HSQLDB.instance.addPostboxEntryToDatabase(this, from, message);
-        channel.postOnNetwork(new ResultEvent(new CQLResult(CQLResult.Type.MESSAGE,
-                String.format("%s received new message", name))));
+    public void receive(String message, String algorithm, File keyfile, Participant from, Channel channel) {
+        Object port = Factory.build(algorithm);
+
+        try {
+            Method method = port.getClass().getDeclaredMethod("decrypt", String.class, File.class);
+            String decryptedMessage = (String) method.invoke(port, message, keyfile);
+
+            HSQLDB.instance.addPostboxEntryToDatabase(this, from, decryptedMessage);
+            channel.postOnNetwork(new ResultEvent(new CQLResult(CQLResult.Type.MESSAGE,
+                    String.format("%s received new message", name))));
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void intrude(String message, String algorithm, Participant from, Channel channel) {
-        // TODO: Crack encrypted message
-        HSQLDB.instance.addPostboxEntryToDatabase(this, from, MESSAGE_UNKNOWN);
+    public void intrude(String message, String algorithm, File keyfile, Participant from, Channel channel) {
+        int messageId = HSQLDB.instance.addPostboxEntryToDatabase(this, from, MESSAGE_UNKNOWN);
 
-        IntrudeService service = new IntrudeService(message, algorithm);
+        CrackService service = new CrackService(message, algorithm, keyfile);
         service.setOnCancelled(event -> channel.postOnNetwork(new ResultEvent(new CQLResult(CQLResult.Type.MESSAGE,
-                String.format("intruder %s | crack message from participant %s failed", name, from)))));
+                String.format("intruder %s | crack message from participant %s failed", name, from.getName())))));
 
-        service.setOnSucceeded(event -> channel.postOnNetwork(new ResultEvent(new CQLResult(CQLResult.Type.MESSAGE,
-                String.format("intruder %s cracked message from participant %s | %s",
-                        name, from, service.getValue())))));
+        service.setOnSucceeded(event -> {
+            if (service.getValue() != null) {
+                HSQLDB.instance.updatePostboxEntryInDatabase(messageId, this, service.getValue());
+                channel.postOnNetwork(new ResultEvent(new CQLResult(CQLResult.Type.MESSAGE,
+                        String.format("intruder %s cracked message from participant %s | %s",
+                                name, from.getName(), service.getValue()))));
+            } else {
+                // If the result is null, message couldn't been cracked.
+                channel.postOnNetwork(new ResultEvent(new CQLResult(CQLResult.Type.MESSAGE,
+                        String.format("intruder %s | crack message from participant %s failed",
+                                name, from.getName()))));
+            }
+        });
 
         service.start();
 
+        // Wait 30 seconds until break up the crack service.
         PauseTransition delay = new PauseTransition(Duration.seconds(30));
         delay.play();
         delay.setOnFinished(event -> service.cancel());

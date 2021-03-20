@@ -9,11 +9,15 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation group: 'org.json', name: 'json', version: '20210307'
+}
+
 task build_jar(type: Jar) {
-    project.archivesBaseName = 'rsa'
+    project.archivesBaseName = 'shift'
 
     manifest {
-        attributes["Main-Class"] = "RSAAlgorithm"
+        attributes["Main-Class"] = "ShiftAlgorithm"
     }
 
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it )} }

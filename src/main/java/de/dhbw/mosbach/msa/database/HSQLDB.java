@@ -183,31 +183,34 @@ public enum HSQLDB {
 
     // Returns the id of this entry to update it later by the intruder.
     public int addPostboxEntryToDatabase(Participant to, Participant from, String message) {
-        StringBuilder sqlStringBuilder01 = new StringBuilder();
-        sqlStringBuilder01.append("INSERT INTO postbox_").append(to.getName()).append(" (");
-        sqlStringBuilder01.append("participant_from_id").append(",");
-        sqlStringBuilder01.append("message").append(",");
-        sqlStringBuilder01.append("timestamp").append(") VALUES (");
-        sqlStringBuilder01.append(getIdForParticipant(from)).append(",");
-        sqlStringBuilder01.append("'").append(message).append("',");
-        sqlStringBuilder01.append("UNIX_TIMESTAMP())");
+        String sqlStringBuilder01 = "INSERT INTO postbox_" + to.getName() + " (" +
+                "participant_from_id" + "," +
+                "message" + "," +
+                "timestamp" + ") VALUES (" +
+                getIdForParticipant(from) + "," +
+                "'" + message + "'," +
+                "UNIX_TIMESTAMP())";
+        update(sqlStringBuilder01);
 
-        update(sqlStringBuilder01.toString());
-
-        StringBuilder sqlStringBuilder02 = new StringBuilder();
-        sqlStringBuilder02.append("CALL IDENTITY()");
-
-//        ResultSet result = query(sqlStringBuilder02.toString());
-//        try {
-//            result.next();
-//            // TODO: Debugging
-//            System.out.println(result);
-//            return result.getInt(0);
-//        } catch (SQLException sql) {
-//            System.out.println(sql.getMessage());
-//        }
+        ResultSet result = query("SELECT id FROM postbox_" + to.getName() + " ORDER BY timestamp DESC");
+        try {
+            result.next();
+            return result.getInt("id");
+        } catch (SQLException sql) {
+            System.out.println(sql.getMessage());
+        }
 
         return -1;
+    }
+
+    public void updatePostboxEntryInDatabase(int id, Participant to, String message) {
+        StringBuilder sqlStringBuilder01 = new StringBuilder();
+        sqlStringBuilder01.append("UPDATE postbox_").append(to.getName()).append(" SET ");
+        sqlStringBuilder01.append("message = '").append(message).append("',");
+        sqlStringBuilder01.append("timestamp = UNIX_TIMESTAMP() ");
+        sqlStringBuilder01.append("WHERE id = ").append(id);
+
+        update(sqlStringBuilder01.toString());
     }
 
     public void addAlgorithmToDatabase(String algorithm) {
@@ -451,6 +454,5 @@ public enum HSQLDB {
         createTableParticipants();
         createTableChannel();
         createTableMessages();
-        createTablePostbox("msa");
     }
 }

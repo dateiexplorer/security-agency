@@ -1,10 +1,14 @@
 package de.dhbw.mosbach.msa.interpreter.commands;
 
+import de.dhbw.mosbach.msa.Configuration;
 import de.dhbw.mosbach.msa.interpreter.CQLInterpreter;
 import de.dhbw.mosbach.msa.interpreter.CQLResult;
 import de.dhbw.mosbach.msa.network.Channel;
 import de.dhbw.mosbach.msa.network.Network;
 import de.dhbw.mosbach.msa.network.Participant;
+
+import java.io.File;
+import java.net.URL;
 
 public class SendMessageCommand implements ICQLCommand {
 
@@ -40,11 +44,27 @@ public class SendMessageCommand implements ICQLCommand {
         }
 
         // Channel and participants exists.
+
+        // Check if the algorithm exists.
+        if (Configuration.instance.components.get(algorithm) == null) {
+            interpreter.result(new CQLResult(CQLResult.Type.ERROR,
+                    String.format("algorithm %s is not available.", algorithm)));
+            return;
+        }
+
+        // Check if keyfile exists.
+        URL fileURL = getClass().getClassLoader().getResource(Configuration.instance.keyDirectory + keyfile);
+        if (fileURL == null) {
+            interpreter.result(new CQLResult(CQLResult.Type.ERROR,
+                    String.format("keyfile %s does not exist.", keyfile)));
+            return;
+        }
+
         // Send message after setting the result, because the send method will causes into output.
         interpreter.result(new CQLResult(CQLResult.Type.OK,
                 String.format("send message from %s to %s", participantFrom, participantTo)));
 
         // Do sending message through the channel.
-        from.send(message, algorithm, keyfile, to, channel);
+        from.send(message, algorithm, new File(fileURL.getFile()), to, channel);
     }
 }

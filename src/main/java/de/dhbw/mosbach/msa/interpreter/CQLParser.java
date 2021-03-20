@@ -22,6 +22,7 @@ public class CQLParser {
         Matcher messageMatcher = messagePattern.matcher(query);
         if (messageMatcher.find()) {
             message = messageMatcher.group();
+            message = message.substring(1, message.length() - 1);
             query = query.replaceAll(messagePattern.pattern(), "msg");
         }
 
