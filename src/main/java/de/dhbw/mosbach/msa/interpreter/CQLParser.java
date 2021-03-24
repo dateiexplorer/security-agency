@@ -42,6 +42,15 @@ public class CQLParser {
             return new EncryptMessageCommand(message, tokens[4], tokens[7]);
         }
 
+        // Ecrypt message
+        Matcher decrypt = Pattern.compile(
+                "(?i)decrypt\\s+message\\s+msg\\s+using\\s+[^\s]+\\s+and\\s+keyfile\\s+[^\s]+"
+        ).matcher(query);
+
+        if (decrypt.matches()) {
+            return new DecryptMessageCommand(message, tokens[4], tokens[7]);
+        }
+
         // Crack message
         Matcher crack = Pattern.compile(
                 "(?i)crack\\s+encrypted\\s+message\\s+msg\\s+using\\s+[^\s]+(\\s+and\\s+keyfile\\s+[^\s]+)?"
