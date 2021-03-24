@@ -1,15 +1,13 @@
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.io.*;
+import org.json.JSONObject;
+import utils.Key;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
+import java.nio.charset.Charset;
+import java.util.Base64;
 
 public class RSAAlgorithm {
 
@@ -26,49 +24,33 @@ public class RSAAlgorithm {
         return instance;
     }
 
-    private Key readKeyFromFile(File keyfile) throws IOException {
-        InputStream input = new FileInputStream(keyfile);
-        ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(input));
+    private Key readKeyFromFile(File keyfile, String key) throws IOException {
+        StringBuilder jsonData = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new FileReader(keyfile));
 
-        try {
-            BigInteger modulus = (BigInteger) objectInputStream.readObject();
-            BigInteger exponent = (BigInteger) objectInputStream.readObject();
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-            // TODO: Generate public or private
-            Key key = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
-            return key;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-        } finally {
-            objectInputStream.close();
+        String line = null;
+        while (null != (line = reader.readLine())) {
+            jsonData.append(line);
         }
 
-        return null;
+        JSONObject jsonObject = new JSONObject(jsonData.toString());
+        JSONObject keyObject = jsonObject.getJSONObject(key);
+
+        BigInteger modulus = keyObject.getBigInteger("modulus");
+        BigInteger exponent = keyObject.getBigInteger("exponent");
+
+        return new Key(modulus, exponent);
+    }
+
+    private BigInteger crypt(BigInteger message, Key key) {
+        return message.modPow(key.getE(), key.getN());
     }
 
     private String innerEncrypt(String plainMessage, File publicKeyfile) {
         try {
-            Key publicKey = readKeyFromFile(publicKeyfile);
-
-            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-512ANDMGF1PADDING");
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-
-            return new String(cipher.doFinal(plainMessage.getBytes()));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
+            Key key = readKeyFromFile(publicKeyfile, "public");
+            byte[] bytes = plainMessage.getBytes(Charset.defaultCharset());
+            return Base64.getEncoder().encodeToString(crypt(new BigInteger(bytes), key).toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,22 +60,9 @@ public class RSAAlgorithm {
 
     private String innerDecrypt(String encryptedMessage, File privateKeyfile) {
         try {
-            Key privateKey = readKeyFromFile(privateKeyfile);
-
-            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-512ANDMGF1PADDING");
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-
-            return new String(cipher.doFinal(encryptedMessage.getBytes()));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            Key key = readKeyFromFile(privateKeyfile, "private");
+            byte[] msg = crypt(new BigInteger(Base64.getDecoder().decode(encryptedMessage)), key).toByteArray();
+            return new String(msg);
         } catch (IOException e) {
             e.printStackTrace();
         }
