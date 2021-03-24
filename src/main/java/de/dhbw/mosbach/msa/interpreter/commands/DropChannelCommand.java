@@ -26,8 +26,7 @@ public class DropChannelCommand implements ICQLCommand {
         }
 
         // Drop channel
-        network.getChannels().remove(name);
-        // TODO: Drop channel from database.
+        network.removeChannelByName(name);
 
         interpreter.result(new CQLResult(CQLResult.Type.OK,
                 String.format("channel %s deleted", name)));

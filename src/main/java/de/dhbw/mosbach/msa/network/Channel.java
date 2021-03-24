@@ -1,6 +1,7 @@
 package de.dhbw.mosbach.msa.network;
 
 import com.google.common.eventbus.EventBus;
+import de.dhbw.mosbach.msa.database.HSQLDB;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,8 @@ public class Channel {
         eventBus = new EventBus(name);
         register(from);
         register(to);
+
+        HSQLDB.instance.addChannelToDatabase(this);
     }
 
     public void register(Participant participant) {
