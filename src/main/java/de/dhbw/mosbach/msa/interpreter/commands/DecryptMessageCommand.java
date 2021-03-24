@@ -10,13 +10,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 
-public class EncryptMessageCommand implements ICQLCommand {
+public class DecryptMessageCommand implements ICQLCommand {
 
     private final String message;
     private final String algorithm;
     private final String keyfile;
 
-    public EncryptMessageCommand(String message, String algorithm, String keyfile) {
+    public DecryptMessageCommand(String message, String algorithm, String keyfile) {
         this.message = message;
         this.algorithm = algorithm;
         this.keyfile = keyfile;
@@ -41,10 +41,10 @@ public class EncryptMessageCommand implements ICQLCommand {
 
         Object port = Factory.build(algorithm);
         try {
-            Method method = port.getClass().getDeclaredMethod("encrypt", String.class, File.class);
-            String encryptedMessage = (String) method.invoke(port, message, new File(fileURL.getFile()));
+            Method method = port.getClass().getDeclaredMethod("decrypt", String.class, File.class);
+            String decryptedMessage = (String) method.invoke(port, message, new File(fileURL.getFile()));
 
-            interpreter.result(new CQLResult(CQLResult.Type.OK, encryptedMessage));
+            interpreter.result(new CQLResult(CQLResult.Type.OK, decryptedMessage));
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
             interpreter.result(new CQLResult(CQLResult.Type.ERROR,

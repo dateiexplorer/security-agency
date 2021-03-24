@@ -1,0 +1,4 @@
+rsa;RSAAlgorithm;/components/rsa/build/libs/rsa.jar
+rsa_cracker;RSACracker;/components/rsa_cracker/build/libs/rsa_cracker.jar
+shift;ShiftAlgorithm;/components/shift/build/libs/shift.jar
+shift_cracker;ShiftCracker;/components/shift_cracker/build/libs/shift_cracker.jar;no_keyfile
