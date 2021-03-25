@@ -9,13 +9,26 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation group: 'org.json', name: 'json', version: '20210307'
+}
+
+
 task build_jar(type: Jar) {
     project.archivesBaseName = 'rsa_cracker'
 
     manifest {
-        attributes["Main-Class"] = "RSA_Cracker"
+        attributes["Main-Class"] = "RSACracker"
     }
 
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it )} }
     with jar
 }
+
+
+
+
+
+
+
+
