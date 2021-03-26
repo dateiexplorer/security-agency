@@ -17,6 +17,12 @@ public enum Configuration {
     final String userDirectory = System.getProperty("user.dir");
     final String dataDirectory = userDirectory + fileSeparator + "data" + fileSeparator;
 
+    // Jarsigner
+    public final String jarsigner = System.getProperty("java.home") + fileSeparator + "bin" + fileSeparator +
+            "jarsigner";
+    public final String keystore = "keystore.jks";
+    public final String keystorePassword = "msa-dhbw";
+
     // Database connection
     public final String driverName = "jdbc:hsqldb:";
     public final String username = "msa";

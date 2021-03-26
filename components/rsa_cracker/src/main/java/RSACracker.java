@@ -1,4 +1,8 @@
+import org.json.JSONObject;
+
+import java.io.*;
 import java.math.BigInteger;
+import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,45 +21,45 @@ public class RSACracker {
         return instance;
     }
 
-    private final BigInteger e;
-    private final BigInteger n;
-    private final BigInteger cipher;
+    private BigInteger e;
+    private BigInteger n;
+    private BigInteger cipher;
 
-    public RSACracker(BigInteger e, BigInteger n, BigInteger cipher) {
-        this.e = e;
-        this.n = n;
-        this.cipher = cipher;
+    private void readKeyFromFile(File keyfile) throws IOException {
+        StringBuilder jsonData = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new FileReader(keyfile));
+
+        String line = null;
+        while (null != (line = reader.readLine())) {
+            jsonData.append(line);
+        }
+
+        JSONObject jsonObject = new JSONObject(jsonData.toString());
+        JSONObject keyObject = jsonObject.getJSONObject("public");
+
+        this.n = keyObject.getBigInteger("modulus");
+        System.out.println(n);
+        this.e = keyObject.getBigInteger("exponent");
+        System.out.println(e);
     }
 
-    private String crackRSA(String cipher, File keyFile) {
-        getKeyFromFile(keyFile);
-        byte[] bytes = Base64.getDecoder().decode(cipher);
-        this.cipher = new BigInteger(bytes);
-
+    private String innerDecrypt(String encryptedMessage, File keyfile) {
         try {
+            readKeyFromFile(keyfile);
+            byte[] bytes = Base64.getDecoder().decode(encryptedMessage);
+            this.cipher = new BigInteger(bytes);
+
             BigInteger text = execute();
+            System.out.println(text);
             return new String(text.toByteArray());
         } catch (RSACrackerException e) {
             System.out.println(e.getMessage());
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         }
 
         return null;
     }
-
-    private void getKeyFromFile(File keyFile) {
-        try {
-            BigInteger n = null, e = null;
-            for(String line : Files.readAllLines(keyFile.toPath(), StandardCharsets.UTF_8)) {
-                if(line.contains("n")) n = new BigInteger(line.replaceAll("[^0-9]", ""));
-                if(line.contains("e")) e = new BigInteger(line.replaceAll("[^0-9]", ""));
-            }
-            this.n = n;
-            this.e = e;
-        } catch (IOException ioe) {
-            System.out.println(ioe.getMessage());
-        }
-    }
-
 
     public BigInteger execute() throws RSACrackerException {
         BigInteger p, q, d;
@@ -69,6 +73,8 @@ public class RSACracker {
         q = factorList.get(1);
         BigInteger phi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
         d = e.modInverse(phi);
+
+
         return cipher.modPow(d, n);
     }
 
@@ -95,6 +101,7 @@ public class RSACracker {
                     factor = factor.add(two);
                 }
             }
+
             factorList.add(n);
         }
 
@@ -102,9 +109,10 @@ public class RSACracker {
     }
 
     public class Port implements IRSACracker {
+
         @Override
-        public String crack(String cipher, File keyFile) {
-            return crackRSA(cipher, keyFile);
+        public String decrypt(String encryptedMessage, File keyfile) {
+            return innerDecrypt(encryptedMessage, keyfile);
         }
     }
 }

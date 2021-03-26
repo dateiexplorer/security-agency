@@ -1,5 +1,5 @@
 rootProject.name = 'security-agency'
-include ':rsa_generator'
 include ':components:rsa'
+include ':components:rsa_cracker'
 include ':components:shift'
 include ':components:shift_cracker'

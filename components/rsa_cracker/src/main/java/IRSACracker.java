@@ -1,5 +1,6 @@
 import java.io.File;
 
-public interface ICrackerRSA {
-    String crack(String cipher, File keyFile);
+public interface IRSACracker {
+
+    String decrypt(String encryptedMessage, File keyfile);
 }

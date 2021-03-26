@@ -1,4 +1,5 @@
 public class RSACrackerException extends Exception {
+
     public RSACrackerException() {
         super();
     }
