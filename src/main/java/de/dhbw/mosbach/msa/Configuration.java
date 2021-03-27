@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,8 +18,6 @@ public enum Configuration {
     // Jarsigner
     public final String jarsigner = System.getProperty("java.home") + fileSeparator + "bin" + fileSeparator +
             "jarsigner";
-    public final String keystore = "keystore.jks";
-    public final String keystorePassword = "msa-dhbw";
 
     // Database connection
     public final String driverName = "jdbc:hsqldb:";
@@ -30,10 +26,10 @@ public enum Configuration {
     public final String databaseFile = dataDirectory + "datastore.db";
 
     public final String keyDirectory = "keys" + fileSeparator;
+    public final String logDirectory = "logs" + fileSeparator;
 
     // Components
-    public Map<String, String[]> components = loadComponentsFromFile(
-            Configuration.class.getClassLoader().getResource("components.csv").getFile());
+    public Map<String, String[]> components = loadComponentsFromFile("components.csv");
 
     private Map<String, String[]> loadComponentsFromFile(String file) {
         Map<String, String[]> components = new HashMap<>();

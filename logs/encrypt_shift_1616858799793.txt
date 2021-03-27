@@ -1,0 +1,10 @@
+27.03 16:26:39.795 | INFO | execute EncryptMessageCommand
+27.03 16:26:39.797 | INFO | loading port for component shift
+27.03 16:26:39.798 | INFO | verify jar archive
+27.03 16:26:40.242 | INFO | component shift is signed
+27.03 16:26:40.242 | INFO | load jar archive for component shift
+27.03 16:26:40.249 | INFO | port loaded successfully for component shift
+27.03 16:26:40.249 | INFO | initialize encrypt method
+27.03 16:26:40.249 | INFO | invoke encrypt method to encrypt 'morpheus'
+27.03 16:26:40.250 | INFO | message 'morpheus' encrypted as 'rtwumjzx'
+27.03 16:26:40.251 | INFO | leave EncryptedMessageCommand

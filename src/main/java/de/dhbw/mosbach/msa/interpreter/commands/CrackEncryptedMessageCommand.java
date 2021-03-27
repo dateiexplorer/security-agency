@@ -29,20 +29,18 @@ public class CrackEncryptedMessageCommand implements ICQLCommand {
         // Check if the algorithm exists.
         if (Configuration.instance.components.get(algorithm) == null) {
             interpreter.result(new CQLResult(CQLResult.Type.ERROR,
-                    String.format("algorithm %s is not available.", algorithm)));
+                    String.format("algorithm %s is not available", algorithm)));
             return;
         }
 
         // Check if keyfile exists.
         File file = null;
         if (keyfile != null) {
-            URL fileURL = getClass().getClassLoader().getResource(Configuration.instance.keyDirectory + keyfile);
-            if (fileURL == null) {
+            file = new File(Configuration.instance.keyDirectory + keyfile);
+            if (!file.exists()) {
                 interpreter.result(new CQLResult(CQLResult.Type.ERROR,
-                        String.format("keyfile %s does not exist.", keyfile)));
+                        String.format("keyfile %s does not exist or shouldn't be used", keyfile)));
                 return;
-            } else {
-                file = new File(fileURL.getFile());
             }
         }
 

@@ -2,7 +2,7 @@ package de.dhbw.mosbach.msa.network;
 
 import com.google.common.eventbus.Subscribe;
 import de.dhbw.mosbach.msa.database.HSQLDB;
-import de.dhbw.mosbach.msa.factory.Factory;
+import de.dhbw.mosbach.msa.components.JarLoader;
 import de.dhbw.mosbach.msa.interpreter.CQLResult;
 import de.dhbw.mosbach.msa.network.events.ResultEvent;
 import de.dhbw.mosbach.msa.network.events.SendMessageEvent;
@@ -45,7 +45,7 @@ public class Participant {
     }
 
     public void send(String message, String algorithm, File keyfile, Participant to, Channel channel) {
-        Object port = Factory.build(algorithm);
+        Object port = JarLoader.build(algorithm);
         try {
             Method method = port.getClass().getDeclaredMethod("encrypt", String.class, File.class);
             String encryptedMessage = (String) method.invoke(port, message, keyfile);
@@ -60,7 +60,7 @@ public class Participant {
     }
 
     public void receive(String message, String algorithm, File keyfile, Participant from, Channel channel) {
-        Object port = Factory.build(algorithm);
+        Object port = JarLoader.build(algorithm);
 
         try {
             Method method = port.getClass().getDeclaredMethod("decrypt", String.class, File.class);

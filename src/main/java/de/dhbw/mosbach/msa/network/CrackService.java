@@ -1,7 +1,7 @@
 package de.dhbw.mosbach.msa.network;
 
 import de.dhbw.mosbach.msa.Configuration;
-import de.dhbw.mosbach.msa.factory.Factory;
+import de.dhbw.mosbach.msa.components.JarLoader;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
@@ -32,7 +32,7 @@ public class CrackService extends Service<String> {
                     return null;
                 }
 
-                Object port = Factory.build(cracker);
+                Object port = JarLoader.build(cracker);
 
                 try {
                     Method method = null;

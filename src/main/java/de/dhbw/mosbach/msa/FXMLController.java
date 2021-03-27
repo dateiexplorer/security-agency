@@ -4,6 +4,7 @@ import de.dhbw.mosbach.msa.database.HSQLDB;
 import de.dhbw.mosbach.msa.interpreter.CQLInterpreter;
 import de.dhbw.mosbach.msa.interpreter.CQLResult;
 import de.dhbw.mosbach.msa.interpreter.ICQLInterpreterListener;
+import de.dhbw.mosbach.msa.logging.Logger;
 import de.dhbw.mosbach.msa.network.INetworkListener;
 import de.dhbw.mosbach.msa.network.Network;
 import de.dhbw.mosbach.msa.network.events.ResultEvent;
@@ -11,6 +12,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
 public class FXMLController implements ICQLInterpreterListener, INetworkListener {
+
+    public final static Logger logger = new Logger();
 
     @FXML
     private TextArea txtInput;
@@ -61,13 +64,18 @@ public class FXMLController implements ICQLInterpreterListener, INetworkListener
     @FXML
     private void handleBtnDebug() {
         txtOutput.setStyle("-fx-text-fill: orange;");
-        txtOutput.setText("set debug to " + btnDebug.isSelected());
+        logger.setActive(btnDebug.isSelected());
+
+        tabs.getSelectionModel().select(tabOutput);
+        txtOutput.setText("set debug to " + logger.isActive());
     }
 
     @FXML
     private void handleBtnLoadLog() {
         txtOutput.setStyle("-fx-text-fill: black;");
-        txtOutput.setText("Not implemented yet");
+
+        tabs.getSelectionModel().select(tabOutput);
+        txtOutput.setText(logger.getContent(logger.getLastLogFile()));
     }
 
     @FXML
